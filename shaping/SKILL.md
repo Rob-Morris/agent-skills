@@ -1,9 +1,11 @@
 ---
 name: shaping
 description: >
-  Shape an artefact through structured Q&A. Routes to the right sub-skill:
-  brainstorm (new/unclear artefacts), refine (open decisions), or discover
-  (exploration-driven artefacts like People and Ideas).
+  Shapes an artefact through structured Q&A and routes to the right sub-skill:
+  brainstorm, refine, or discover.
+  Use when an artefact is new or unclear (brainstorm), has open decisions
+  to resolve (refine), or needs exploration-driven discovery (discover, e.g.
+  People and Ideas).
 ---
 
 # Shaping

@@ -1,9 +1,10 @@
 ---
 name: swarm-test
 description: >
-  Dispatch a swarm of small agents to test docs, implementations, or designs.
+  Dispatches a swarm of small agents to test docs, implementations, or designs.
   Two modes: 'review' (quick comprehension check with fix-and-iterate) and
   'evaluate' (structured evaluation with scored results and recommendations).
+  Use when validating that an artefact is understood, executable, or accurate.
 ---
 
 # Swarm Test

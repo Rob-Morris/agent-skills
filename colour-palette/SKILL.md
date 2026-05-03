@@ -1,6 +1,8 @@
 ---
 name: colour-palette
-description: Use when choosing, designing, generating, or reviewing colours or colour palettes for any context — CSS themes, UI components, terminal configs, status bars, or brand identity
+description: >
+  Guides colour and palette selection — CSS themes, UI components, terminal configs, status bars, brand identity.
+  Use when choosing, designing, generating, or reviewing colours for any context.
 ---
 
 # Colour Palette Design
