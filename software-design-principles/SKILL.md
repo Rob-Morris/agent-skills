@@ -1,9 +1,8 @@
 ---
 name: software-design-principles
 description: >
-  Provides a situational reference for software design with principles, trade-off calibration, examples, and common failure modes.
-  Use when making decisions while writing, designing, or refactoring code, or evaluating trivial code:
-  for code that is clearer, easier to maintain, and avoids common mistakes.
+  Provides guidance on good software design principles, with trade-off calibration, examples, and common failure modes.
+  Applies when making decisions while writing, designing, or refactoring code, or evaluating trivial code for clarity, maintainability, and common mistakes.
 ---
 
 # Software Design Principles Reference
