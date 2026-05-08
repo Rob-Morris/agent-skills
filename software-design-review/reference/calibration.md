@@ -15,6 +15,8 @@ When two principles point in different directions, use this table. Cite by row n
 | **Add error handling vs let it fail** | Crash early on invariant violations; only handle errors you have a real recovery for | The boundary is to a system you cannot trust (network, user input, third-party) |
 | **Backwards compatibility vs clean change** | Clean change when no consumers exist | Real consumers depend on the surface — preserve or migrate |
 | **Pattern (Repository, Factory…) vs plain code** | Plain code | Two real use cases already exist that the pattern would unify |
+| **Premature optimisation vs bottleneck neglect** | Don't pay complexity for guessed gains | Optimise when performance is required, the algorithm or boundary cost model is wrong, repeated work is avoidable, independent work is being serialised, or measurement identifies a hot path |
+| **Clarity vs runtime cost** | Once performance matters, prefer the clearest code | Accept extra complexity only when it removes structural or measured cost without hiding the rule |
 
 ## Tie-breakers
 

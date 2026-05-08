@@ -1,9 +1,8 @@
 ---
 name: software-design-review
-description: > 
+description: >
   Reviews code with a team against established software design principles, and returns triaged findings (no edits).
-  Use when evaluating code, or after writing or refactoring complex code, systems or technical designs:
-  for code that is clearer, easier to maintain, and avoids common mistakes.
+  Use when evaluating code, or after writing or refactoring complex code, systems or technical designs, for code that is clearer, easier to maintain, and avoids common mistakes.
 ---
 
 # Software Design Principles: Code Review
@@ -12,15 +11,15 @@ Drawing on best-practice software design principles, evaluates code or a softwar
 
 ## How this skill works
 
-Orchestrates a multi-concern review with a team of five reviewer subagents, who each look at the code through a single lens; their findings are combined and triaged by the calling agent. Each reviewer focusses only on the principles relevant to its concern.
+Orchestrates a multi-concern review with a team of six reviewer subagents, who each look at the code through a single lens; their findings are combined and triaged by the calling agent. Each reviewer focusses only on the principles relevant to its concern.
 
 ## Reference
 
 Load as needed; reviewers receive their relevant subset:
 
-- [reference/principles.md](reference/principles.md) — the 22 design principles + Foundation
+- [reference/principles.md](reference/principles.md) — the 27 design principles + Foundation
 - [reference/calibration.md](reference/calibration.md) — calibration table for resolving cross-concern tensions
-- [reference/examples.md](reference/examples.md) — worked examples (assert vs raise, P21 direction-vs-metadata, when to extract)
+- [reference/examples.md](reference/examples.md) — worked examples (assert vs raise, P21 direction-vs-metadata, when to extract, when performance work is justified)
 
 ## When to skip orchestration
 
@@ -38,11 +37,11 @@ Determine what is being evaluated. Three common shapes:
 
 If the user hasn't named a surface, default to recent work: run `git diff HEAD` to see uncommitted changes. If there are no git changes, review the most recently modified files the user mentioned or that were edited earlier in this conversation. Ask the user if these defaults yield nothing, or if the surface to review is unclear.
 
-If the surface is large (e.g. multi-thousand-line diff or many files), confirm scope with the user before dispatching — each of the five reviewers receives the full surface, so cost scales with size.
+If the surface is large (e.g. multi-thousand-line diff or many files), confirm scope with the user before dispatching — each of the six reviewers receives the full surface, so cost scales with size.
 
 ## Phase 2: Dispatch reviewers in parallel
 
-Dispatch all five reviewers as parallel subagents in a single message. Pass each subagent:
+Dispatch all six reviewers as parallel subagents in a single message. Pass each subagent:
 
 1. The full evaluation surface (paths, diff content, or proposed change).
 2. The corresponding briefing file: `reviewers/<concern>.md` (read it and include the content in the subagent's prompt; or instruct the subagent to read it).
@@ -53,8 +52,9 @@ The reviewers and their concerns:
 | Concern | Briefing | Looks for |
 |---|---|---|
 | Premise & verification | [reviewers/premise.md](reviewers/premise.md) | Guards/abstractions whose factual premise is unverified; redundant validation; principle-citation tunnel vision |
-| Structural design | [reviewers/structural.md](reviewers/structural.md) | Dependency direction, layering, module boundaries, knowledge duplication, persistence leaks |
-| Code-level smells | [reviewers/code-smells.md](reviewers/code-smells.md) | Speculative abstraction, mixed abstraction, naming, primitive obsession, swallowed errors, magic constants, parameter shape |
+| Structural design | [reviewers/structural.md](reviewers/structural.md) | Dependency direction, layering, module boundaries, knowledge duplication, persistence leaks, misplaced seams where the codebase already has a canonical home |
+| Code-level smells | [reviewers/code-smells.md](reviewers/code-smells.md) | Speculative abstraction, mixed abstraction, redundant state, unnecessary wrappers, nested conditionals, naming, primitive obsession, magic constants, parameter shape, local codebase reuse |
+| Efficiency & costs | [reviewers/efficiency.md](reviewers/efficiency.md) | Requirement-driven performance issues, repeated work, chatty expensive boundaries, unnecessary serialisation, retained state and unbounded growth, premature tuning |
 | Defensive coding & hacks | [reviewers/defensive.md](reviewers/defensive.md) | Retry/sleep masking, broad except, defensive layers without a real boundary |
 | Verification & completion | [reviewers/completion.md](reviewers/completion.md) | Tests, stubs (`TODO`/`NotImplementedError`/`pass`), hallucinated APIs, claiming done without observed behaviour |
 
@@ -69,11 +69,13 @@ If a reviewer finds nothing, it returns `No findings.`
 When all reviewers return:
 
 1. **Aggregate** every finding into a single list.
-2. **De-duplicate** — if two reviewers found the same issue, keep one row and tag both concerns. **Note convergence as a confidence signal**: 4-of-5 reviewer convergence on a finding is strong evidence; 1-of-5 warrants a re-check against the code.
+2. **De-duplicate** — if two reviewers found the same issue, keep one row and tag both concerns. **Note convergence as a confidence signal**: 4+ reviewer convergence on a finding is strong evidence; a lone reviewer warrants a re-check against the code.
 3. **Resolve cross-concern tensions** using [reference/calibration.md](reference/calibration.md). Example: a "speculative abstraction" finding from code-smells may conflict with a "stability boundary" finding from structural — the row "Reduce coupling vs avoid abstraction" decides which applies. Also surface order-of-operations dependencies (e.g. "fix L1 first, then re-check whether M3 is still needed").
 4. **Self-check** the aggregated list before presenting:
    - For every guard/validation finding: was the call path traced?
    - For every extraction/abstraction finding: is the second-caller threshold met *and* is the "same rule" claim explicit and falsifiable?
+   - For every "reuse existing code" finding: did the reviewer name the existing utility/module and confirm it owns the same rule, not just a similar shape?
+   - For every efficiency finding: is there a stated requirement, an intrinsically expensive boundary, an avoidable repeated cost, unnecessary serialisation, or concrete evidence that the path matters?
    - For every principle citation: does it apply to *this exact* code, or did the reviewer reach for the closest match?
    - Remove or revise any finding that fails these checks.
 5. **Collect positive observations** — every reviewer is also looking for calibration already done correctly. Aggregate these into a separate section. Recognising correct-by-design code is calibration evidence; an empty positives list is itself a signal worth noticing.

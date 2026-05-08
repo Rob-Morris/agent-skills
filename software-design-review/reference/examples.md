@@ -1,6 +1,6 @@
 # Worked Examples
 
-Three examples illustrating principle application in context. Reviewers can cite them when a finding maps cleanly to one of these patterns.
+Four examples illustrating principle application in context. Reviewers can cite them when a finding maps cleanly to one of these patterns.
 
 ## Example A — `assert` vs `raise` at an I/O boundary
 
@@ -42,3 +42,14 @@ Three modules each validate an artefact name with the same rule (non-empty, no s
 Two modules formatting wikilinks identically — if the formatting rule changes (a new wikilink syntax, a different escape character), both must change together or one will silently drift → **also extract** (override on second occurrence: same rule, drift risk).
 
 A single occurrence of similar-looking validation? **Leave it** — duplication is cheaper than the wrong abstraction.
+
+## Example D — When performance work is justified
+
+```python
+def load_users(ids: list[str]) -> list[User]:
+    return [gateway.fetch_user(user_id) for user_id in ids]
+```
+
+If `fetch_user` crosses a network, process, or storage boundary, this is chatty by design. The fix is structural: give the boundary a coarse-grained or batch operation.
+
+If the same loop is local and cheap, keep the clearer version unless a requirement or measurement says the path matters.

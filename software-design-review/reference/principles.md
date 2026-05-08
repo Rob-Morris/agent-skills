@@ -1,6 +1,6 @@
 # Software Design Principles — Canonical Reference
 
-The 22 numbered principles plus the Foundation. Synthesised from Clean Architecture (Martin), The Pragmatic Programmer (Hunt & Thomas), Patterns of Enterprise Application Architecture (Fowler), Refactoring (Fowler), Extreme Programming (Beck), Domain-Driven Design (Evans), and the Parnas/Dijkstra/Meyer tradition.
+The 27 numbered principles plus the Foundation. Synthesised from Clean Architecture (Martin), The Pragmatic Programmer (Hunt & Thomas), Patterns of Enterprise Application Architecture (Fowler), Refactoring (Fowler), Extreme Programming (Beck), Domain-Driven Design (Evans), and the Parnas/Dijkstra/Meyer tradition.
 
 ## Foundation
 
@@ -39,3 +39,11 @@ The 22 numbered principles plus the Foundation. Synthesised from Clean Architect
 20. **Speak the domain's language in the code.** The same word in conversation and in classes. Translation layers are bug factories.
 21. **Persistence is a detail.** Model the domain; map to storage at the edge. *This governs the direction of coupling (domain does not import storage), not whether returned values may carry infrastructure metadata; whether to include such metadata is a separate composition question.*
 22. **Bound your contexts.** Different parts of the business mean different things by the same word. Draw those boundaries explicitly.
+
+## Efficiency & Costs
+
+23. **Treat performance as a requirement when it materially matters.** Latency, throughput, startup time, memory, and operational cost can all be first-class constraints, especially when users feel them directly or the boundary cost model makes them unavoidable.
+24. **Prefer algorithmic and structural wins over local cleverness.** Better asymptotics, batching, and data flow usually beat syntax tricks.
+25. **Eliminate avoidable repeated work.** Repeated or hot paths should do only work that can affect the result.
+26. **Design expensive boundaries to minimise round-trips and over-fetching.** Remote, process, and storage boundaries need coarse-grained interfaces.
+27. **Exploit independence without spreading shared state.** Concurrency helps when work is truly independent and coordination stays cheap.

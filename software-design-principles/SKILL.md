@@ -55,6 +55,14 @@ If a heuristic and the local code disagree, the local code wins. If you can't ar
 21. **Persistence is a detail.** Direction of coupling: domain does not import storage. (Returned values may carry infrastructure metadata; that's a separate composition question.)
 22. **Bound your contexts.** Different parts of the business mean different things by the same word — draw those boundaries explicitly.
 
+### Efficiency & Costs
+
+23. **Treat performance as a requirement when it materially matters.** Latency, throughput, startup time, memory, and operational cost can all be first-class constraints, especially when users feel them directly or the boundary cost model makes them unavoidable.
+24. **Prefer algorithmic and structural wins over local cleverness.** Better asymptotics, batching, and data flow usually beat syntax tricks.
+25. **Eliminate avoidable repeated work.** Repeated or hot paths should do only work that can affect the result.
+26. **Design expensive boundaries to minimise round-trips and over-fetching.** Remote, process, and storage boundaries need coarse-grained interfaces.
+27. **Exploit independence without spreading shared state.** Concurrency helps when work is truly independent and coordination stays cheap.
+
 ## Calibration — when principles conflict
 
 | Tension | Default | Override condition |
@@ -70,6 +78,8 @@ If a heuristic and the local code disagree, the local code wins. If you can't ar
 | **Add error handling vs let it fail** | Crash early; only handle errors with a real recovery | Boundary to a system you cannot trust (network, user input, third-party) |
 | **Backwards compatibility vs clean change** | Clean change when no consumers exist | Real consumers depend on the surface |
 | **Pattern (Repository, Factory…) vs plain code** | Plain code | Two real use cases already exist that the pattern would unify |
+| **Premature optimisation vs bottleneck neglect** | Don't pay complexity for guessed gains | Optimise when performance is required, the algorithm or boundary cost model is wrong, repeated work is avoidable, independent work is being serialised, or measurement identifies a hot path |
+| **Clarity vs runtime cost** | Once performance matters, prefer the clearest code | Accept extra complexity only when it removes structural or measured cost without hiding the rule |
 
 **Tie-breakers:** When still unsure, choose the option **easier to reverse**. When a principle and a deadline conflict, prefer the principle that keeps the next change cheap. When two principles conflict, prefer the one that protects an axis of change you have actually seen.
 
@@ -113,6 +123,17 @@ Two modules formatting wikilinks identically — if one is updated for a new edg
 
 A single occurrence of similar-looking validation? Leave it — duplication is cheaper than the wrong abstraction.
 
+### D — When performance work is justified
+
+```python
+def load_users(ids: list[str]) -> list[User]:
+    return [gateway.fetch_user(user_id) for user_id in ids]
+```
+
+If `fetch_user` crosses a network, process, or storage boundary, this is chatty by design. The fix is structural: give the boundary a coarse-grained or batch operation.
+
+If the same loop is local and cheap, keep the clearer version unless a requirement or measurement says the path matters.
+
 ## Watch for these as you work
 
 Common agent-prone failure modes. If you notice yourself moving toward one, check whether the corresponding calibration applies before committing.
@@ -146,6 +167,21 @@ Common agent-prone failure modes. If you notice yourself moving toward one, chec
 - Calling a method, library export, or CLI flag without confirming it exists in the installed version
 - Leaving `TODO`, `FIXME`, `NotImplementedError`, `pass`, or hardcoded stub values in code paths that will execute at runtime
 - Claiming "done" without having verified the change works as intended (running the tests, exercising the feature, observing behaviour)
+
+### Efficiency & Costs
+
+#### Optimising too early
+- Adding performance machinery before a requirement, cost model, or measurement justifies it
+- Introducing caching, batching, concurrency, pooling, or retained state before the path is known to matter
+- Obscuring the rule with clever tuning when clear code would be cheaper to maintain and no real bottleneck has been shown
+- Shaping interfaces around imagined performance needs rather than the actual cost model of the boundary
+
+#### Missing justified optimisation
+- Repeating work that could be reused, batched, or avoided — recomputing, rereading, refetching, over-fetching, or triggering downstream work when nothing semantically changed
+- Making chatty calls across expensive boundaries — N+1 calls, one-row-at-a-time fetches, or pre-check-then-act round-trips
+- Serialising genuinely independent work through shared mutable state or unnecessary sequencing
+- Retaining data, listeners, handles, or caches longer than needed, or letting working sets grow without a bound
+- Ignoring a stated performance requirement, structurally expensive boundary, or measured hot path once identified
 
 ### Comments & docs
 - Adding a comment that says what the next line does
