@@ -1,6 +1,9 @@
 ---
 name: writing-skills
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: >
+  Creates, edits, and validates skills before they are deployed.
+  Use when authoring a new skill, refining an existing one, or checking
+  that a skill works as intended.
 ---
 
 # Writing Skills
@@ -98,16 +101,16 @@ skills/
 - Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
 - Max 1024 characters total
 - `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
-- `description`: Third-person, describes ONLY when to use (NOT what it does)
-  - Start with "Use when..." to focus on triggering conditions
-  - Include specific symptoms, situations, and contexts
-  - **NEVER summarize the skill's process or workflow** (see SDO section for why)
+- `description`: Third-person, states what the skill does first, then when to use it
+  - Lead with a concise, concrete capability statement
+  - Follow with triggering conditions, symptoms, situations, and contexts
+  - **NEVER pack in enough process detail to replace reading the skill body** (see SDO section for why)
   - Keep under 500 characters if possible
 
 ```markdown
 ---
 name: Skill-Name-With-Hyphens
-description: Use when [specific triggering conditions and symptoms]
+description: Describes what the skill does. Use when [specific triggering conditions and symptoms]
 ---
 
 # Skill Name
@@ -147,55 +150,58 @@ Concrete results
 
 **Purpose:** Your agent reads the description to decide which skills to load for a given task. Make it answer: "Should I read this skill right now?"
 
-**Format:** Start with "Use when..." to focus on triggering conditions
+**Format:** State what the skill does, then when to use it
 
-**CRITICAL: Description = When to Use, NOT What the Skill Does**
+**Repo convention (diverges from upstream):** upstream Superpowers requires descriptions to state ONLY the triggering conditions ("Start with 'Use when...'", never say what the skill does). This repo's `CLAUDE.md` requires what-then-when instead, matching Anthropic's published skill-authoring guidance. The rule below is deliberately different from upstream's — a future sync must not silently revert it.
 
-The description should ONLY describe triggering conditions. Do NOT summarize the skill's process or workflow in the description.
+**CRITICAL: Description = Short What + When, NOT a workflow substitute**
 
-**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, an agent may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused an agent to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
+The description should briefly say what the skill does, then describe the triggering conditions. Do NOT summarize the skill's full process or workflow in the description.
 
-When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), the agent correctly read the flowchart and followed the two-stage review process.
+**Why this matters:** Testing revealed that when a description summarizes too much of the skill's workflow, an agent may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused an agent to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
+
+When the description was tightened to a short capability statement plus trigger conditions, the agent correctly read the flowchart and followed the full review process.
 
 **The trap:** Descriptions that summarize workflow create a shortcut agents will take. The skill body becomes documentation agents skip.
 
 ```yaml
 # ❌ BAD: Summarizes workflow - agents may follow this instead of reading skill
-description: Use when executing plans - dispatches subagent per task with code review between tasks
+description: Executes plans by dispatching a subagent per task with code review between tasks. Use when executing implementation plans.
 
 # ❌ BAD: Too much process detail
-description: Use for TDD - write test first, watch it fail, write minimal code, refactor
+description: Guides TDD by writing a failing test first, then minimal code, then refactoring. Use for feature or bugfix implementation.
 
-# ✅ GOOD: Just triggering conditions, no workflow summary
-description: Use when executing implementation plans with independent tasks in the current session
+# ✅ GOOD: Short what statement plus triggering conditions
+description: Executes implementation plans with fresh-context subagents, a per-task review gate, and a bounded fix loop. Use when a plan has independent tasks and work should proceed in the current session with strong review discipline.
 
-# ✅ GOOD: Triggering conditions only
-description: Use when implementing any feature or bugfix, before writing implementation code
+# ✅ GOOD: Concrete capability plus trigger conditions
+description: Guides feature and bugfix implementation through a test-first workflow. Use before writing implementation code when behavior should be specified and verified through failing and passing tests.
 ```
 
 **Content:**
+- Lead with a short, concrete statement of what the skill does
 - Use concrete triggers, symptoms, and situations that signal this skill applies
 - Describe the *problem* (race conditions, inconsistent behavior) not *language-specific symptoms* (setTimeout, sleep)
 - Keep triggers technology-agnostic unless the skill itself is technology-specific
 - If skill is technology-specific, make that explicit in the trigger
 - Write in third person (injected into system prompt)
-- **NEVER summarize the skill's process or workflow**
+- **NEVER summarize the skill's process or workflow in enough detail to replace the body**
 
 ```yaml
 # ❌ BAD: Too abstract, vague, doesn't include when to use
-description: For async testing
+description: Helps with async tests.
 
 # ❌ BAD: First person
-description: I can help you with async tests when they're flaky
+description: I can help with async tests when they're flaky.
 
 # ❌ BAD: Mentions technology but skill isn't specific to it
-description: Use when tests use setTimeout/sleep and are flaky
+description: Stabilizes async tests. Use when tests use setTimeout or sleep and are flaky.
 
-# ✅ GOOD: Starts with "Use when", describes problem, no workflow
-description: Use when tests have race conditions, timing dependencies, or pass/fail inconsistently
+# ✅ GOOD: Short what statement plus problem-oriented trigger
+description: Stabilizes async test behavior around race conditions and timing dependencies. Use when tests pass and fail inconsistently.
 
 # ✅ GOOD: Technology-specific skill with explicit trigger
-description: Use when using React Router and handling authentication redirects
+description: Guides React Router authentication redirect testing. Use when routing behavior depends on login or auth redirects.
 ```
 
 ### 2. Keyword Coverage
@@ -548,7 +554,7 @@ Make it easy for agents to self-check when rationalizing:
 Add to description: symptoms of when you're ABOUT to violate the rule:
 
 ```yaml
-description: use when implementing any feature or bugfix, before writing implementation code
+description: Guides feature and bugfix implementation through a test-first workflow. Use before writing implementation code, especially when feeling tempted to code first and test later.
 ```
 
 ## RED-GREEN-REFACTOR for Skills
@@ -638,7 +644,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 **GREEN Phase - Write Minimal Skill:**
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
 - [ ] YAML frontmatter with required `name` and `description` fields (max 1024 chars; see [spec](https://agentskills.io/specification))
-- [ ] Description starts with "Use when..." and includes specific triggers/symptoms
+- [ ] Description states what the skill does, then when to use it, with specific triggers or symptoms
 - [ ] Description written in third person
 - [ ] Keywords throughout for search (errors, symptoms, tools)
 - [ ] Clear overview with core principle

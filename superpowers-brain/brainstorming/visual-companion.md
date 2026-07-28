@@ -32,6 +32,8 @@ The server watches a directory for HTML files and serves the newest one to the b
 
 ## Starting a Session
 
+**Script paths in this guide are relative to this skill's own directory.** There is no plugin root in this import — resolve `scripts/…` against the concrete path of the `brainstorming/` directory you just read this file from (e.g. `<skill-family-root>/brainstorming/scripts/start-server.sh`). If a `scripts/` path appears not to exist, you resolved it against the wrong root; do not conclude the companion is unavailable.
+
 ```bash
 # Start AFTER the user approves the companion. --open auto-opens their browser on
 # the first screen; --project-dir persists mockups and enables same-port restart.

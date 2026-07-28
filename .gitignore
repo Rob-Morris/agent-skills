@@ -17,3 +17,6 @@ logs/
 .claude/settings.local.json
 CLAUDE.local.md
 AGENTS.local.md
+
+# Brain local state
+.brain/local/

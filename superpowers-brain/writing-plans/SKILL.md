@@ -1,6 +1,10 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: >
+  Writes detailed implementation plans for multi-step tasks from specs or
+  requirements, with global constraints and per-task interfaces.
+  Use before touching code when the work needs explicit task-by-task
+  execution guidance.
 ---
 
 # Writing Plans

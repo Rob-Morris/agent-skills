@@ -1,6 +1,10 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work
+description: >
+  Guides completion of development work by verifying tests, then presenting
+  structured merge, PR, or cleanup options.
+  Use when implementation is complete, tests pass, and the work is ready
+  to integrate.
 ---
 
 # Finishing a Development Branch

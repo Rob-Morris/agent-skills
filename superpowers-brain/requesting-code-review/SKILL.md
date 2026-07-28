@@ -1,6 +1,10 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: >
+  Dispatches focused code review to verify requirements, quality, and
+  correctness before merge or handoff.
+  Use when completing tasks, shipping major features, or seeking review
+  coverage on finished work.
 ---
 
 # Requesting Code Review

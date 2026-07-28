@@ -1,6 +1,9 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: >
+  Guides feature and bugfix implementation through a test-first workflow.
+  Use before writing implementation code when behavior should be
+  specified and verified through failing and passing tests.
 ---
 
 # Test-Driven Development (TDD)

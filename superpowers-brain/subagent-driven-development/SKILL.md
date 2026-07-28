@@ -1,6 +1,10 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: >
+  Executes an implementation plan with fresh-context subagents, a per-task
+  review gate, and a bounded fix loop, tracked in a resumable ledger.
+  Use when a plan has independent tasks and work should proceed in the
+  current session with strong review discipline.
 ---
 
 # Subagent-Driven Development
@@ -118,6 +122,14 @@ Conversation memory does not survive compaction. In real sessions,
 controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
+
+**File paths resolve against this skill's own directory.** There is no plugin
+root in this import: every `scripts/…` reference below means
+`<skill-family-root>/subagent-driven-development/scripts/…` — the concrete path
+of the skill directory you loaded this file from. Resolve it once at setup and
+reuse the absolute path. The same applies to sibling-skill references such as
+`../requesting-code-review/code-reviewer.md`, which resolve relative to this
+skill directory.
 
 - Each plan owns a workspace: at skill start, run this skill's
   `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored

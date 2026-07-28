@@ -1,6 +1,9 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: >
+  Investigates bugs, test failures, and unexpected behavior before fixes
+  are proposed.
+  Use when diagnosing a defect and the root cause is not yet established.
 ---
 
 # Systematic Debugging

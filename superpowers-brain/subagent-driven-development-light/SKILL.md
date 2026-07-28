@@ -1,6 +1,11 @@
 ---
 name: subagent-driven-development-light
-description: Use when executing implementation plans where per-task review is overkill — small plans, exploratory work, prototypes, or well-trusted changes — but you still want fresh-context subagents per task
+description: >
+  Executes an implementation plan with fresh-context subagents per task and
+  a single end-of-plan review, with one fix dispatch and one scoped
+  re-review.
+  Use when per-task review gates are overkill for small plans, prototypes,
+  exploratory work, or well-trusted changes.
 ---
 
 # Subagent-Driven Development (Light)
@@ -92,6 +97,8 @@ digraph process {
 Ensure the work happens in an isolated workspace: use superpowers-brain:using-git-worktrees to create one or verify the existing one. Never start implementation on a main/master branch without your human partner's explicit consent.
 
 This plan gets a scratch directory for its briefs, reports, and review packages. Run the heavy variant's script — this skill keeps no copies:
+
+**Script and prompt paths resolve against this skill's own directory.** There is no plugin root in this import: every `../<skill>/…` reference below — `../subagent-driven-development/…` for scripts and prompts, `../requesting-code-review/code-reviewer.md` for the final review — means `<skill-family-root>/<skill>/…`, a sibling of the skill directory you loaded this file from. Resolve it once at setup and reuse the absolute path.
 
 - `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` prints the plan's git-ignored directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`). Everything for THIS plan lives there; another plan's directory is never yours to read or write.
 - There is no progress ledger in this variant. Your record is your todos plus `git log`, with the implementer reports in the workspace as backup. If your session compacts mid-plan, rebuild from those before dispatching anything — re-dispatching a finished task is the expensive failure. A plan long enough that you expect a compaction wants the heavy variant, which keeps a ledger for exactly this.
