@@ -1,9 +1,6 @@
 ---
 name: executing-plans
-description: >
-  Executes a written implementation plan in a separate session with review
-  checkpoints.
-  Use when a plan already exists and work should follow it task by task.
+description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
 ---
 
 # Executing Plans
@@ -14,23 +11,19 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Plan state management (Brain mode):** In a Brain vault (a `.brain/` directory exists at the project root), this skill owns the plan's `status` field. It sets `implementing` before Step 2 starts and `completed` at the end of Step 3 — whether or not a development branch was created. No other skill moves these statuses.
+**Plan state management (Brain mode):** In a Brain vault (a `.brain/` directory exists in this directory or an ancestor), whichever executor runs owns these transitions — this skill, superpowers-brain:subagent-driven-development, or superpowers-brain:subagent-driven-development-light. Exactly one of them executes a given plan, and it sets `implementing` at setup and `completed` when execution finishes. When it is this skill: `implementing` before Step 2 starts, `completed` at the end of Step 3 — whether or not a development branch was created. No skill outside that set moves these statuses.
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers-brain:subagent-driven-development instead of this skill.
+**Note:** Tell your human partner that Superpowers works much better with access to subagents (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use superpowers-brain:subagent-driven-development instead of this skill.
 
 ## The Process
 
 ### Step 1: Load and Review Plan
-
-**Locate the plan:**
-- If you have the plan's file path, read it directly.
-- **In Brain mode**, if your human partner refers to the plan by title or subject rather than path, use `brain_list(type="plans")` to enumerate plans or `brain_search(query="<subject>", type="temporal/plans")` for relevance-ranked matches. Confirm the match with your human partner before proceeding if ambiguous.
-
-**Load and review:**
-1. Read plan file
-2. Review critically - identify any questions or concerns about the plan
-3. If concerns: Raise them with your human partner before starting
-4. If no concerns: Create TodoWrite and proceed
+1. Ensure an isolated workspace: use superpowers-brain:using-git-worktrees to create one or verify the existing one
+2. **Brain mode:** locate the plan. If you have the plan's file path, read it directly. If your human partner refers to the plan by title or subject rather than path, use `brain_list(type="plans")` to enumerate plans or `brain_search(query="<subject>", type="temporal/plans")` for relevance-ranked matches. Confirm the match with your human partner before proceeding if ambiguous.
+3. Read plan file
+4. Review critically - identify any questions or concerns about the plan
+5. If concerns: Raise them with your human partner before starting
+6. If no concerns: Create todos for the plan items and proceed
 
 **In Brain mode, mark the plan as implementing before moving to Step 2:**
 - `brain_edit(resource="artefact", path="<plan path>", operation="edit", frontmatter={"status": "implementing"})` (omit `body` — frontmatter-only change)
@@ -79,10 +72,3 @@ After all tasks complete and verified:
 - Reference skills when plan says to
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
-
-## Integration
-
-**Required workflow skills:**
-- **superpowers-brain:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **superpowers-brain:writing-plans** - Creates the plan this skill executes
-- **superpowers-brain:finishing-a-development-branch** - Complete development after all tasks

@@ -1,16 +1,11 @@
 ---
 name: verification-before-completion
-description: >
-  Requires verification commands and observed evidence before work is
-  declared complete, fixed, or passing.
-  Use when about to make success claims, commit, or open a PR.
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
 ---
 
 # Verification Before Completion
 
 ## Overview
-
-Claiming work is complete without verification is dishonesty, not efficiency.
 
 **Core principle:** Evidence before claims, always.
 
@@ -108,15 +103,6 @@ Skip any step = lying, not verifying
 ❌ Trust agent report
 ```
 
-## Why This Matters
-
-From 24 failure memories:
-- your human partner said "I don't believe you" - trust broken
-- Undefined functions shipped - would crash
-- Missing requirements shipped - incomplete features
-- Time wasted on false completion → redirect → rework
-- Violates: "Honesty is a core value. If you lie, you'll be replaced."
-
 ## When To Apply
 
 **ALWAYS before:**
@@ -132,11 +118,3 @@ From 24 failure memories:
 - Paraphrases and synonyms
 - Implications of success
 - ANY communication suggesting completion/correctness
-
-## The Bottom Line
-
-**No shortcuts for verification.**
-
-Run the command. Read the output. THEN claim the result.
-
-This is non-negotiable.
