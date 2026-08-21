@@ -1,8 +1,8 @@
 ---
 name: software-design-review
 description: >
-  Reviews code with a team against established software design principles, and returns triaged findings (no edits).
-  Use when evaluating code, or after writing or refactoring complex code, systems or technical designs, for code that is clearer, easier to maintain, and avoids common mistakes.
+  Reviews code and software designs against established design principles, and returns triaged findings.
+  Use when reviewing code or software designs that are complex or important, for clearer, easier to maintain software that avoids common mistakes.
 ---
 
 # Software Design Principles: Code Review
@@ -11,7 +11,7 @@ Drawing on best-practice software design principles, evaluates code or a softwar
 
 ## How this skill works
 
-Orchestrates a multi-concern review with a team of six reviewer subagents, who each look at the code through a single lens; their findings are combined and triaged by the calling agent. Each reviewer focusses only on the principles relevant to its concern.
+Orchestrates a review through subagents. Depending on the review scale, dispatches either one reviewer for a complete review or a team of six reviewers, each focused on a single concern; the calling agent combines and triages their findings.
 
 ## Reference
 
@@ -21,11 +21,15 @@ Load as needed; reviewers receive their relevant subset:
 - [reference/calibration.md](reference/calibration.md) — calibration table for resolving cross-concern tensions
 - [reference/examples.md](reference/examples.md) — worked examples (assert vs raise, P21 direction-vs-metadata, when to extract, when performance work is justified)
 
-## When to skip orchestration
+## Calibrate the review scale
 
-For trivial evaluations — single-line fix, mechanical edit, ≤2 files, ≤50 changed lines, no architectural surface — read [reference/principles.md](reference/principles.md) and [reference/calibration.md](reference/calibration.md) directly and apply inline. The dispatch overhead is not worth it.
+After identifying the evaluation surface, choose the review scale that is proportionate to the user's request and the work's scope, complexity, and consequence.
 
-For everything else, run Phases 1–3 below.
+A single-reviewer dispatch is generally appropriate for focused, routine, or lower-risk work. The reviewer conducts the complete review against the principles in this skill.
+
+Use the six-reviewer team when it will improve the review of broader, more complex, or more consequential work. Large review surfaces, system-level designs, significant architectural decisions, and work with meaningful user or operational impact are common reasons to use the team. For large reviews, focused reviewers also improve finding quality by giving each concern dedicated attention.
+
+Apply judgement to the specific review rather than treating these examples as exhaustive rules. Both modes assess the complete review surface against the same principles; the team provides broader coverage and dedicated attention to each concern.
 
 ## Phase 1: Identify the evaluation surface
 
@@ -37,11 +41,13 @@ Determine what is being evaluated. Three common shapes:
 
 If the user hasn't named a surface, default to recent work: run `git diff HEAD` to see uncommitted changes. If there are no git changes, review the most recently modified files the user mentioned or that were edited earlier in this conversation. Ask the user if these defaults yield nothing, or if the surface to review is unclear.
 
-If the surface is large (e.g. multi-thousand-line diff or many files), confirm scope with the user before dispatching — each of the six reviewers receives the full surface, so cost scales with size.
+If the review scope or scale is uncertain, state the proposed evaluation surface and whether a single reviewer or the team is recommended, then confirm with the user before dispatching. Prefer a single reviewer when it appears sufficient.
 
-## Phase 2: Dispatch reviewers in parallel
+## Phase 2: Dispatch reviewer(s)
 
-Dispatch all six reviewers as parallel subagents in a single message. Pass each subagent:
+For a single-reviewer dispatch, send one subagent the full evaluation surface, all six concern areas below, and pointers to `reference/principles.md` and `reference/calibration.md`. It conducts the complete review and returns findings in the uniform format.
+
+For a team review, dispatch all six reviewers in parallel. Pass each subagent:
 
 1. The full evaluation surface (paths, diff content, or proposed change).
 2. The corresponding briefing file: `reviewers/<concern>.md` (read it and include the content in the subagent's prompt; or instruct the subagent to read it).
@@ -64,28 +70,45 @@ Each reviewer returns findings in a uniform table:
 
 If a reviewer finds nothing, it returns `No findings.`
 
-## Phase 3: Aggregate and triage
+## Phase 3: Triage
 
-When all reviewers return:
+Wait until every dispatched reviewer has completed.
 
-1. **Aggregate** every finding into a single list.
-2. **De-duplicate** — if two reviewers found the same issue, keep one row and tag both concerns. **Note convergence as a confidence signal**: 4+ reviewer convergence on a finding is strong evidence; a lone reviewer warrants a re-check against the code.
-3. **Resolve cross-concern tensions** using [reference/calibration.md](reference/calibration.md). Example: a "speculative abstraction" finding from code-smells may conflict with a "stability boundary" finding from structural — the row "Reduce coupling vs avoid abstraction" decides which applies. Also surface order-of-operations dependencies (e.g. "fix L1 first, then re-check whether M3 is still needed").
-4. **Self-check** the aggregated list before presenting:
+The review converges through three consistently named outputs:
+
+- **Findings** — issues to resolve for the reviewed work to meet its stated goal.
+- **What's done well** — positive, calibrated choices worth preserving.
+- **Related follow-ups** — meritorious adjacent work directly revealed by the review, but not required for the current work to converge.
+
+Use judgement and the relationship to the current goal to decide where an observation belongs. Then:
+
+1. **Aggregate** every returned candidate finding and positive observation into a working set, preserving its evidence and concern tags.
+2. **De-duplicate** observations about the same issue or choice. Keep one consolidated entry and retain every applicable concern tag. For team reviews, note reviewer convergence as a confidence signal: convergence from 4+ reviewers is strong evidence, while a lone reviewer's finding warrants a re-check against the code.
+3. **Resolve cross-concern tensions** using [reference/calibration.md](reference/calibration.md). Example: a "speculative abstraction" finding from code-smells may conflict with a "stability boundary" finding from structural — the row "Reduce coupling vs avoid abstraction" decides which applies. Also surface order-of-operations dependencies (e.g. "fix H1 first, then re-check whether M3 is still needed").
+4. **Self-check** the consolidated candidate findings before classifying them:
    - For every guard/validation finding: was the call path traced?
    - For every extraction/abstraction finding: is the second-caller threshold met *and* is the "same rule" claim explicit and falsifiable?
    - For every "reuse existing code" finding: did the reviewer name the existing utility/module and confirm it owns the same rule, not just a similar shape?
    - For every efficiency finding: is there a stated requirement, an intrinsically expensive boundary, an avoidable repeated cost, unnecessary serialisation, or concrete evidence that the path matters?
    - For every principle citation: does it apply to *this exact* code, or did the reviewer reach for the closest match?
    - Remove or revise any finding that fails these checks.
-5. **Collect positive observations** — every reviewer is also looking for calibration already done correctly. Aggregate these into a separate section. Recognising correct-by-design code is calibration evidence; an empty positives list is itself a signal worth noticing.
-6. **Triage** by priority:
+5. **Classify for convergence**:
+   - Place an observation in **Findings** when leaving it unresolved would keep the reviewed work from meeting its goal because of a real bug, failure mode, invariant violation, or concrete design or verification problem.
+   - Place an observation in **Related follow-ups** when it has a concrete benefit and rationale but represents independent, adjacent scope.
+   - When adjacent work blocks a sound resolution of a current finding, capture the blocking issue in **Findings**; reserve **Related follow-ups** for work that is not required now.
+6. **Curate What's done well** — aggregate and de-duplicate the reviewers' positive observations, including calibration already done correctly. Treat these as review evidence, not optional praise: name the concrete choice, why it is well calibrated, and what is worth preserving. An empty set is a signal to re-check the review surface and reviewer output; if none are supported after that re-check, say so without manufacturing praise.
+7. **Triage** by priority:
    - **High** — real bug, user-visible failure mode, or violates a load-bearing invariant.
-   - **Medium** — real smell, defensible to fix.
-   - **Low** — nit, defensible to leave.
-7. **Present** to the user: priority groups with brief rationale; positive observations as a distinct section; anything notable being skipped (and why); for each finding, the convergence count and confidence band.
+   - **Medium** — concrete design or verification problem that materially weakens the work's ability to meet its goal.
+   - **Low** — bounded, lower-impact issue whose resolution is still needed for the work to fully meet its goal.
+8. **Assign confidence** to each Finding from the direct evidence that remains after the self-check. For team reviews, include the convergence count. Treat convergence as a signal rather than a vote: 4+ reviewers is strong supporting evidence, while a lone reviewer calls for a re-check; direct code evidence may still justify high confidence without convergence.
+9. **Present** exactly these sections:
+   - `## Findings` — group Findings by priority with brief rationale. Retain the precise location, concern tags, finding, calibration anchor, and proposed fix; include confidence and, for team reviews, convergence count. Show order-of-operations dependencies where relevant.
+   - `## What's done well` — report the concrete calibrated choices worth preserving.
+   - `## Related follow-ups` — use a small table with columns for opportunity, concrete benefit, and why it is independent scope.
+   Briefly note any notable candidate observation that was not carried forward, and why, under Findings rather than creating another output category.
 
-If the code is already clean, say so in one line.
+If there are no Findings, say in one line under `## Findings` that the reviewed work is clean relative to its stated goal. If either other section has no supported entries, state `None identified.`
 
 ## The Point
 

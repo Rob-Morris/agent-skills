@@ -2,12 +2,12 @@
 name: software-design-principles
 description: >
   Provides guidance on good software design principles, with trade-off calibration, examples, and common failure modes.
-  Applies when making decisions while writing, designing, or refactoring code, or evaluating trivial code for clarity, maintainability, and common mistakes.
+  Use when making decisions while writing, designing, or refactoring code, or evaluating code for clarity, maintainability, and common mistakes.
 ---
 
 # Software Design Principles Reference
 
-This is a reference, not a workflow. Best used for evaluating trivial code changes, or for making better quality decisions during the process of designing or writing code. For reviewing complex or already-written code, diffs or software design, use `software-design-review` instead.
+This is a reference, not a workflow. Best used for evaluating code changes, or for making better quality decisions during the process of designing or writing code.
 
 ## How to use this in the moment
 
