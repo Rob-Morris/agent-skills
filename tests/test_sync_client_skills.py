@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "sync_client_skills.py"
@@ -130,6 +133,26 @@ class SyncClientSkillsTests(unittest.TestCase):
 
         stale = SYNC.DestinationStatus("codex", "example", Path("example"), "stale", "managed copy differs from source")
         self.assertEqual("would sync", SYNC.reported_action(stale, dry_run=True, replace=False))
+
+    def test_completed_install_reports_the_action_taken(self) -> None:
+        destination = self.home / ".codex" / "skills" / "example"
+        destination.mkdir(parents=True)
+        (destination / "SKILL.md").write_text("previous copy\n", encoding="utf-8")
+        output = io.StringIO()
+
+        with (
+            patch.object(SYNC, "repository_root", return_value=self.source),
+            patch.dict(SYNC.os.environ, {"CODEX_HOME": ""}),
+            contextlib.redirect_stdout(output),
+        ):
+            exit_code = SYNC.main(
+                ["--client", "codex", "--home", str(self.home), "--skill", "example", "--replace"]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("codex/example: synced — archived previous copy to ", output.getvalue())
+        self.assertIn(" and installed current source", output.getvalue())
+        self.assertNotIn(": unmanaged —", output.getvalue())
 
 
 if __name__ == "__main__":

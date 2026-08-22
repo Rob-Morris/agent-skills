@@ -222,9 +222,17 @@ def synchronise(
             if dry_run:
                 continue
 
+            backup: Path | None = None
             if path_present(destination) and status.state in {"unmanaged", "modified"}:
-                archive_destination(destination)
+                backup = archive_destination(destination)
             write_skill(source_root, source, client, destination)
+            if backup is not None:
+                detail = f"archived previous copy to {backup} and installed current source"
+            elif status.state == "stale":
+                detail = "updated managed copy from source"
+            else:
+                detail = "installed current source"
+            statuses[-1] = DestinationStatus(client, skill, destination, "synced", detail)
 
     return statuses, errors
 
