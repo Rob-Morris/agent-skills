@@ -6,6 +6,21 @@ A collection of useful agent skills that I've written.
 
 Skills live in their own directories, each containing a `SKILL.md` (with YAML frontmatter describing `name` and `description`) and any supporting files.
 
+## Install or update local skills
+
+The cross-platform updater requires Python 3 and synchronises this repository's top-level skills to the local Codex and Claude skill directories. It records ownership and content hashes, preserves modified copies unless explicitly replaced, and leaves Brain-managed adapters untouched. It works on macOS, Linux, and Windows.
+
+```sh
+# Inspect the current installation without changing anything.
+python3 scripts/sync_client_skills.py --check
+
+# Refresh the two design-review skills for both clients. `--replace` archives
+# the pre-existing un-managed copies on first use.
+python3 scripts/sync_client_skills.py --skill software-design-principles --skill software-design-review --replace
+```
+
+On Windows, use `python` in place of `python3`. Omit `--skill` to synchronise every top-level skill. Use `--dry-run` to preview changes.
+
 ## Skills
 
 | Skill | Last updated | Description |
