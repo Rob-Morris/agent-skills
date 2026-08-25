@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import importlib.util
 import io
+import json
 import sys
 import tempfile
 import unittest
@@ -94,13 +96,41 @@ class SyncClientSkillsTests(unittest.TestCase):
     def test_never_replaces_a_brain_managed_skill(self) -> None:
         destination = self.home / ".codex" / "skills" / "example"
         destination.mkdir(parents=True)
-        (destination / ".brain-agent-skill.json").write_text("{}\n", encoding="utf-8")
+        content = "Brain-managed adapter\n"
+        (destination / "SKILL.md").write_text(content, encoding="utf-8")
+        (destination / SYNC.BRAIN_MARKER_NAME).write_text(
+            json.dumps(
+                {
+                    "schema_version": SYNC.BRAIN_MARKER_SCHEMA_VERSION,
+                    "owner": "obsidian-brain",
+                    "kind": "active-brain-skill-adapter",
+                    "skill": "example",
+                    "content_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+                }
+            ),
+            encoding="utf-8",
+        )
 
         statuses, errors = self.sync(replace=True)
         codex_status = next(status for status in statuses if status.client == "codex")
-        self.assertEqual("externally-managed", codex_status.state)
+        self.assertEqual("brain-managed", codex_status.state)
+        self.assertEqual([], errors)
+        self.assertEqual(content, (destination / "SKILL.md").read_text(encoding="utf-8"))
+
+        statuses, errors = self.sync(check=True)
+        self.assertEqual([], errors)
+        self.assertEqual("brain-managed", next(status for status in statuses if status.client == "codex").state)
+
+    def test_refuses_an_invalid_brain_managed_skill(self) -> None:
+        destination = self.home / ".codex" / "skills" / "example"
+        destination.mkdir(parents=True)
+        (destination / SYNC.BRAIN_MARKER_NAME).write_text("{}\n", encoding="utf-8")
+
+        statuses, errors = self.sync(replace=True)
+        codex_status = next(status for status in statuses if status.client == "codex")
+        self.assertEqual("invalid-brain-managed", codex_status.state)
         self.assertEqual(1, len(errors))
-        self.assertTrue((destination / ".brain-agent-skill.json").is_file())
+        self.assertTrue((destination / SYNC.BRAIN_MARKER_NAME).is_file())
 
     def test_replaces_a_dangling_symlink_only_with_replace(self) -> None:
         destination = self.home / ".codex" / "skills" / "example"
@@ -128,8 +158,8 @@ class SyncClientSkillsTests(unittest.TestCase):
         self.assertEqual("unmanaged", SYNC.reported_action(status, dry_run=True, replace=False))
         self.assertEqual("would archive and sync", SYNC.reported_action(status, dry_run=True, replace=True))
 
-        external = SYNC.DestinationStatus("codex", "example", Path("example"), "externally-managed", "managed by Obsidian Brain")
-        self.assertEqual("externally-managed", SYNC.reported_action(external, dry_run=True, replace=True))
+        brain_managed = SYNC.DestinationStatus("codex", "example", Path("example"), "brain-managed", "managed by Obsidian Brain")
+        self.assertEqual("brain-managed", SYNC.reported_action(brain_managed, dry_run=True, replace=True))
 
         stale = SYNC.DestinationStatus("codex", "example", Path("example"), "stale", "managed copy differs from source")
         self.assertEqual("would sync", SYNC.reported_action(stale, dry_run=True, replace=False))

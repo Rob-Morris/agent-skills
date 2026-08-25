@@ -18,7 +18,10 @@ from typing import Iterable
 
 
 MARKER_NAME = ".agent-skills-install.json"
-EXTERNAL_MARKERS = {".brain-agent-skill.json": "managed by Obsidian Brain"}
+BRAIN_MARKER_NAME = ".brain-agent-skill.json"
+BRAIN_MARKER_OWNER = "obsidian-brain"
+BRAIN_MARKER_KIND = "active-brain-skill-adapter"
+BRAIN_MARKER_SCHEMA_VERSION = 1
 BACKUP_DIR_NAME = ".agent-skills-backups"
 SCHEMA_VERSION = 1
 CLIENTS = ("claude", "codex")
@@ -112,6 +115,44 @@ def read_marker(skill_dir: Path) -> dict | None:
     return marker
 
 
+def inspect_brain_marker(skill_dir: Path, skill: str) -> str | None:
+    """Return a Brain-management detail, or raise when its marker is unsafe."""
+    marker_path = skill_dir / BRAIN_MARKER_NAME
+    if not path_present(marker_path):
+        return None
+    if not marker_path.is_file():
+        raise SyncError(f"invalid Brain ownership marker at {marker_path}")
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SyncError(f"invalid Brain ownership marker at {marker_path}: {exc}") from exc
+
+    expected = {
+        "schema_version": BRAIN_MARKER_SCHEMA_VERSION,
+        "owner": BRAIN_MARKER_OWNER,
+        "kind": BRAIN_MARKER_KIND,
+        "skill": skill,
+    }
+    if not isinstance(marker, dict) or any(marker.get(key) != value for key, value in expected.items()):
+        raise SyncError(f"unrecognised Brain ownership marker at {marker_path}")
+
+    recorded_hash = marker.get("content_sha256")
+    if not isinstance(recorded_hash, str) or len(recorded_hash) != 64:
+        raise SyncError(f"invalid Brain ownership digest at {marker_path}")
+    try:
+        int(recorded_hash, 16)
+    except ValueError as exc:
+        raise SyncError(f"invalid Brain ownership digest at {marker_path}") from exc
+
+    skill_file = skill_dir / "SKILL.md"
+    if not skill_file.is_file():
+        raise SyncError(f"Brain-managed skill is missing {skill_file}")
+    actual_hash = hashlib.sha256(skill_file.read_bytes()).hexdigest()
+    if actual_hash != recorded_hash:
+        raise SyncError(f"Brain-managed skill content differs from marker at {skill_file}")
+    return "managed by Obsidian Brain"
+
+
 def inspect_destination(
     client: str,
     skill: str,
@@ -123,9 +164,12 @@ def inspect_destination(
     if destination.is_symlink() or not destination.is_dir():
         return DestinationStatus(client, skill, destination, "unmanaged", "not a managed skill directory")
 
-    for marker_name, owner in EXTERNAL_MARKERS.items():
-        if (destination / marker_name).exists():
-            return DestinationStatus(client, skill, destination, "externally-managed", owner)
+    try:
+        brain_detail = inspect_brain_marker(destination, skill)
+    except SyncError as exc:
+        return DestinationStatus(client, skill, destination, "invalid-brain-managed", str(exc))
+    if brain_detail is not None:
+        return DestinationStatus(client, skill, destination, "brain-managed", brain_detail)
 
     marker = read_marker(destination)
     if marker is None:
@@ -208,10 +252,10 @@ def synchronise(
             destination = root / skill
             status = inspect_destination(client, skill, source, destination)
             statuses.append(status)
-            if check or status.state == "current":
+            if check or status.state in {"current", "brain-managed"}:
                 continue
 
-            if status.state == "externally-managed":
+            if status.state == "invalid-brain-managed":
                 errors.append(f"{client}/{skill}: {status.detail}; left unchanged")
                 continue
             if status.state in {"unmanaged", "modified"} and not replace:
@@ -287,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if errors:
         return 2
-    if args.check and any(status.state != "current" for status in statuses):
+    if args.check and any(status.state not in {"current", "brain-managed"} for status in statuses):
         return 1
     return 0
 
