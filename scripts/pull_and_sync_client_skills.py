@@ -4,13 +4,33 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-import sync_client_skills as sync
+
+def load_sync_module():
+    """Load the sibling synchroniser without relying on ``sys.path``."""
+    module_name = "agent_skills_sync_client_skills"
+    existing = sys.modules.get(module_name)
+    if existing is not None:
+        return existing
+
+    script_path = Path(__file__).with_name("sync_client_skills.py")
+    spec = importlib.util.spec_from_file_location(module_name, script_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load synchroniser from {script_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+sync = load_sync_module()
 
 
 class UpdateError(RuntimeError):
