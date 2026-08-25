@@ -25,7 +25,6 @@ On Windows, use `python` in place of `python3`. Omit `--skill` to synchronise ev
 
 | Skill | Last updated | Description |
 | --- | --- | --- |
-| [code-review](code-review/) | 2026-05-03 | Reviews changed code and produces a triaged list of findings (no edits). For fixes, see `code-review:fix`. |
 | [colour-palette](colour-palette/) | 2026-05-03 | Guides colour and palette selection — CSS themes, UI components, terminal configs, status bars, brand identity. |
 | [shaping](shaping/) | 2026-05-03 | Shapes an artefact through structured Q&A — routes to `brainstorm`, `refine`, or `discover`. |
 | [software-design-principles](software-design-principles/) | 2026-08-21 | Provides guidance on good software design principles, with trade-off calibration, examples, and common failure modes. Use when making decisions while writing, designing, or refactoring code, or evaluating code for clarity, maintainability, and common mistakes. |
