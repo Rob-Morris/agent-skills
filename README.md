@@ -21,6 +21,16 @@ python3 scripts/sync_client_skills.py --skill software-design-principles --skill
 
 On Windows, use `python` in place of `python3`. Omit `--skill` to synchronise every top-level skill. Use `--dry-run` to preview changes.
 
+### Pull and update installed skills
+
+For a vanilla local checkout, this helper fast-forwards from its configured upstream and updates only skills already managed by this repository. It refuses a checkout with local changes; use normal Git workflows to manage a modified skill library.
+
+```sh
+python3 scripts/pull_and_sync_client_skills.py
+```
+
+It leaves Brain-managed adapters, unmanaged copies, and locally modified copies untouched. New skills are not installed automatically, and a removed source skill is reported rather than removed locally.
+
 ## Skills
 
 | Skill | Last updated | Description |
