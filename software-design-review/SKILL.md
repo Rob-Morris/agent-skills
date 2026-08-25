@@ -93,9 +93,11 @@ Use judgement and the relationship to the current goal to decide where an observ
    - For every principle citation: does it apply to *this exact* code, or did the reviewer reach for the closest match?
    - Remove or revise any finding that fails these checks.
 5. **Classify for convergence**:
-   - Place an observation in **Findings** when leaving it unresolved would keep the reviewed work from meeting its goal because of a real bug, failure mode, invariant violation, or concrete design or verification problem.
-   - Place an observation in **Related follow-ups** when it has a concrete benefit and rationale but represents independent, adjacent scope.
-   - When adjacent work blocks a sound resolution of a current finding, capture the blocking issue in **Findings**; reserve **Related follow-ups** for work that is not required now.
+   - Place an observation in **Findings** when resolving it is needed for the reviewed work to meet its stated goal, including a gap, contradiction, unclear contract, or unmet design, verification, or behavioural requirement.
+   - Classify by whether the reviewed work is complete and coherent without the change, rather than by whether the change would be valuable.
+   - For each candidate **Related follow-up**, ask: “Is this worth doing now to deliver a sound reviewed result?” A yes means it belongs in **Findings**.
+   - Use **Related follow-ups** for independent improvements that remain worthwhile after the reviewed work has converged. Deferring them leaves the reviewed result sound.
+   - When adjacent work blocks a sound resolution of a current finding, capture the blocking issue in **Findings**.
 6. **Curate What's done well** — aggregate and de-duplicate the reviewers' positive observations, including calibration already done correctly. Treat these as review evidence, not optional praise: name the concrete choice, why it is well calibrated, and what is worth preserving. An empty set is a signal to re-check the review surface and reviewer output; if none are supported after that re-check, say so without manufacturing praise.
 7. **Triage** by priority:
    - **High** — real bug, user-visible failure mode, or violates a load-bearing invariant.
