@@ -1,51 +1,70 @@
 ---
 name: shaping
 description: >
-  Shapes an artefact through structured Q&A and routes to the right sub-skill:
-  brainstorm, refine, or discover.
-  Use when an artefact is new or unclear (brainstorm), has open decisions
-  to resolve (refine), or needs exploration-driven discovery (discover, e.g.
-  People and Ideas).
+  Shapes documents and other artefacts through adaptive, structured Q&A, with a
+  revisable plan for shaping style, completion bar, and persistence. Use when
+  developing an idea, design, plan, or other artefact whose purpose, decisions,
+  content, or exploratory understanding need to be worked through collaboratively.
 ---
 
 # Shaping
 
-Shape an artefact through structured Q&A until it meets its type's bar.
+Develop an artefact through collaborative Q&A. Apply each answer throughout the
+affected artefact and related in-scope material, then reconsider what remains
+before asking again.
 
-## Modes
+The skill works with local files, repository documents, managed artefacts, and
+other environments. An integration may provide target resolution, shaping
+metadata, or persistence methods for the roles selected in the session plan.
+The user's requested locations and recording preferences remain authoritative.
 
-### brainstorm
+## Session setup
 
-The artefact is new or a stub. What needs to be shaped isn't clear yet. Explores the idea, writes initial content, then hands off to refine.
+Read and follow [references/assess.md](references/assess.md) first. It resolves
+the artefact and produces a proposed shaping session plan covering:
 
-**File:** `brainstorm/SKILL.md`
+- the shaping style and completion bar;
+- the artefact(s) to update, or whether to hold a working draft in session;
+- where decisions and agent work are recorded, if a durable record is wanted;
+- whether a transcript is wanted and where it is kept; and
+- the environment contributions selected for each concern.
 
-### refine
+Show that plan and ask whether the user is ready to begin or wants to change
+it. Once confirmed, use it as the session contract. Revisit it when the user
+changes a relevant preference or the work expands to another artefact.
 
-The artefact is clear but has open decisions to work through. Decision-driven, with progress tracking.
+## Active workflows
 
-**File:** `refine/SKILL.md`
+- **Brainstorm:** Use for a new or skeletal convergent artefact whose concrete
+  decisions are not clear yet. Read [references/brainstorm.md](references/brainstorm.md).
+- **Refine:** Use for a formed convergent artefact, including one whose agenda
+  appears complete and needs exit handling. Read [references/refine.md](references/refine.md).
+- **Discover:** Use for exploratory shaping, where the value lies in developing
+  understanding rather than settling a bounded decision agenda. Read
+  [references/discover.md](references/discover.md).
 
-### discover
+## Shared workflows
 
-The artefact is a discovery type (People, Ideas, Cookies, Journal Entries, Thoughts). Open-ended exploration, no decision table.
+- **Four-Cs review:** When an active workflow reaches a candidate stopping or
+  handoff point, recommend the optional review in
+  [references/review.md](references/review.md). The user may bypass it.
 
-**File:** `discover/SKILL.md`
+All paths are relative to this skill's root. These referenced Markdown files are
+workflow instructions, not independently discoverable skills. Read each
+selected file completely.
 
 ## Routing
 
-All file paths below are relative to this skill's base directory. Use the Read tool to load them — do NOT use the Skill tool.
+1. Establish and confirm the session plan with
+   [references/assess.md](references/assess.md).
+2. Read and follow the selected workflow.
+3. At a candidate exit, recommend [references/review.md](references/review.md).
+   If the user accepts, reconcile its outcome through the active workflow.
 
-1. Read and follow `assess/SKILL.md` to set up the session (artefact, transcript, taxonomy).
-2. Based on what assess found, select the mode:
-   - Artefact is new, empty, or a stub without enough information to make specific decisions → **brainstorm**
-   - Artefact has content and is a convergent type (Designs, Plans, Tasks, Reports, Research, Presentations, Printables, Mockups) with open decisions → **refine**
-   - Artefact is a discovery type → **discover**
-3. Read and follow the skill file for the selected mode.
+## Examples
 
-## Routing Examples
-
-- `shaping <design name>` → assess → **refine** (existing design with decisions)
-- `shaping` + "I want to build X" → assess (creates artefact) → **brainstorm**
-- `shaping <person name>` → assess → **discover**
-- `shaping <stub design>` → assess → **brainstorm** (not enough content to refine yet)
+- Existing design with decisions -> propose convergent shaping -> **refine**
+- “I want to build X” with no formed artefact -> propose convergent shaping ->
+  **brainstorm**
+- “Help me capture and develop what we know about this topic” -> propose
+  exploratory shaping -> **discover**
